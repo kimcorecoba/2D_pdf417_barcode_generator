@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Test cache
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Generated output
+output/*.png
+output/*.jpg
+output/*.jpeg
+output/*.bmp
+output/*.gif
+
+# OS files
+Thumbs.db
+.DS_Store
