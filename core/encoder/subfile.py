@@ -9,6 +9,11 @@ class SubfileBuilder:
         offset: int,
         length: int,
     ) -> str:
+        
+        print("\n=== SubfileBuilder ===")
+        print("offset =", offset)
+        print("length =", length)
+        print("======================\n")
         return (
             f"{file_type}"
             f"{offset:04d}"

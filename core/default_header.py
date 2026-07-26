@@ -6,5 +6,6 @@ def default_header():
         iin="636000",
         version="10",
         jurisdiction_version="00",
+        number_of_entries=1,
         file_type="DL",
     )

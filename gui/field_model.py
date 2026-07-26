@@ -18,6 +18,23 @@ class FieldTableModel(QAbstractTableModel):
         self.beginResetModel()
         self.fields = fields
         self.endResetModel()
+        
+    def refresh(self):
+
+        validator = Validator()
+        validator.validate(self.fields)
+
+        if not self.fields:
+            return
+
+        top_left = self.index(0, 0)
+        bottom_right = self.index(
+            self.rowCount() - 1,
+            self.columnCount() - 1
+        )
+
+        self.dataChanged.emit(top_left, bottom_right)
+        self.fieldEdited.emit()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self.fields)
@@ -111,17 +128,7 @@ class FieldTableModel(QAbstractTableModel):
                 field.value != field.original_value
             )
 
-            validator = Validator()
-            validator.validate(self.fields)
-
-            top_left = self.index(0, 0)
-            bottom_right = self.index(
-                self.rowCount() - 1,
-                self.columnCount() - 1
-            )
-
-            self.dataChanged.emit(top_left, bottom_right)
-            self.fieldEdited.emit()
+            self.refresh()
 
             return True
 

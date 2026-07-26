@@ -5,27 +5,47 @@ class HeaderParser:
 
     def parse(self, raw_text: str):
 
-        lines = raw_text.splitlines()
+        print("\n===== RAW INPUT TO HEADER PARSER =====")
+        print("repr:", repr(raw_text))
+        print("length:", len(raw_text))
+        print("hex:", raw_text.encode("ascii", errors="replace").hex())
+        print("=====================================\n")
+ 
+        text = raw_text.replace("\r", "").replace("\n", "")
+        
+        
 
-        for line in lines:
+        marker = "ANSI "
 
-            line = line.strip()
+        start = text.find(marker)
 
-            if line.startswith("ANSI"):
+        if start == -1:
+            return None
 
-                data = line[4:].strip()
+        start += len(marker)
 
-                iin = data[0:6]
-                version = data[6:8]
-                jurisdiction_version = data[8:12]
+        iin = text[start:start + 6]
 
-                next_line = lines[lines.index(line) + 1].strip()
-                file_type = next_line[:2]
+        version = text[start + 6:start + 8]
 
-                return HeaderInfo(
-                    iin=iin,
-                    version=version,
-                    jurisdiction_version=jurisdiction_version,
-                    file_type=file_type,
-                )
+        jurisdiction_version = text[start + 8:start + 10]
+
+        number_of_entries = int(
+            text[start + 10:start + 12]
+        )
+
+        subfile_start = start + 12
+
+        file_type = text[
+            subfile_start:
+            subfile_start + 2
+        ]
+
+        return HeaderInfo(
+            iin=iin,
+            version=version,
+            jurisdiction_version=jurisdiction_version,
+            number_of_entries=number_of_entries,
+            file_type=file_type,
+        )
         return None

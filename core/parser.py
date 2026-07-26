@@ -23,7 +23,7 @@ class AAMVAParser:
 
         for line in raw_text.splitlines():
 
-            line = line.strip()
+            line = line.rstrip("\r")
 
             if not line:
                 continue
@@ -32,22 +32,48 @@ class AAMVAParser:
             if line == "@":
                 continue
 
-            if line.startswith("ANSI"):
-                continue
+            if line.lstrip().startswith("ANSI"):
+                line = line.lstrip()
+                marker = "DL"
+
+                # Find the second "DL":
+                # 1st = subfile designator ("DL00310277")
+                # 2nd = beginning of the actual data ("DLDCAD")
+                first = line.find(marker)
+                second = line.find(marker, first + 2)
+
+                if second != -1:
+                    line = line[second:]
+                else:
+                    continue
 
             if line.startswith("DL"):
-                continue
+
+                # Raw AAMVA payload: DL + offset + length
+                if len(line) >= 10 and line[2:10].isdigit():
+                    line = line[10:]
+
+                # Decoded text: first field immediately follows DL
+                else:
+                    line = line[2:]
+
+                if not line:
+                    continue
 
             lines.append(line)
             
         for line in lines:
-
-            line = line.strip()
+            
+            if line.startswith(" "):
+                print(f"Leading space found: {repr(line)}")
 
             if len(line) < 4:
                 continue
-
+            
+            
+            print(repr(line))
             code = line[:3]
+   
 
             if code not in FIELD_DEFINITIONS:
 
@@ -55,26 +81,44 @@ class AAMVAParser:
                     Field(
                         code=code,
                         name="Unknown Field",
-                        value=line[3:].strip(),
-                        original_value=line[3:].strip(),
+                        value = line[3:],
+                        original_value=line[3:],
                         required=False,
                     )
                 )
 
                 continue
 
-            value = line[3:].strip()
+            value = line[3:]
+            
+            
+            if code in ("DAK", "DCL"):
+                print(f"BEFORE LOOKUP: {code} -> {repr(value)} (len={len(value)})")
 
             name, required = FIELD_DEFINITIONS[code]
 
-            fields.append(
-                Field(
-                    code=code,
-                    name=name,
-                    value=value,
-                    original_value=value,
-                    required=required,
-                )
+            if code in ("DAK", "DCL"):
+                print(f"AFTER LOOKUP: {code}")
+
+            field = Field(
+                code=code,
+                name=name,
+                value=value,
+                original_value=value,
+                required=required,
             )
 
+            if field.code in ("DAK", "DCL"):
+                print(f"AFTER FIELD: {field.code} -> {repr(field.value)}")
+
+            
+
+            fields.append(field)
+            
+        print("\n=== Parsed Fields ===")
+
+        for field in fields:
+            print(f"{field.code}: {repr(field.value)}")
+
+        print("=====================\n")   
         return fields

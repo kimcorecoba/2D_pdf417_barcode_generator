@@ -40,6 +40,9 @@ class BodyBuilder:
         }
 
         for field in fields:
+            
+            if not field.value:
+                continue
 
             if field.code in ordered_codes:
                 continue
@@ -56,9 +59,18 @@ class BodyBuilder:
                     f"length of {element.max_length} characters."
                 )
 
-            body.append(f"{field.code}{field.value}")
+            entry = f"{field.code}{field.value}"
+            print(f"{field.code}: {len(entry)} bytes -> {repr(entry)}")
+            body.append(entry)
 
-        return (
+        result = (
             config.data_element_separator.join(body)
             + config.segment_terminator
         )
+
+        print("\n=== BodyBuilder ===")
+        print("len(result) =", len(result))
+        print("Last 40 chars:", repr(result[-40:]))
+        print("===================\n")
+
+        return result

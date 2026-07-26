@@ -29,6 +29,8 @@ from PySide6.QtWidgets import (
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.header = default_header()
+        self.barcode_generated = False
 
         self.setWindowTitle("PDF417 Studio")
         self.resize(1600, 900)
@@ -121,17 +123,7 @@ class MainWindow(QMainWindow):
             if field.code in sample_values:
                 field.value = sample_values[field.code]
         
-        validator = Validator()
-        validator.validate(self.editor.model.fields)
-
-        top_left = self.editor.model.index(0, 0)        
-        bottom_right = self.editor.model.index(
-            self.editor.model.rowCount() - 1,
-            self.editor.model.columnCount() - 1
-        )
-
-        self.editor.model.dataChanged.emit(top_left, bottom_right)
-        self.editor.model.fieldEdited.emit()
+        self.editor.model.refresh()
                    
     
     def import_aamva(self):
@@ -152,6 +144,9 @@ class MainWindow(QMainWindow):
 
         with open(filename, "r", encoding="utf-8") as file:
             raw = file.read()
+            print("========== RAW FILE ==========")
+            print(repr(raw))
+            print("==============================")
 
         parser = AAMVAParser()
         validator = Validator()
@@ -209,6 +204,13 @@ class MainWindow(QMainWindow):
 
         generator = BarcodeGenerator()
 
+        print("\n===== FIELDS SENT TO ENCODER =====")
+
+        for field in self.editor.model.fields:
+            print(field.code, "=", repr(field.value))
+
+        print("==================================\n")
+
         try:
             generator.generate(
                 self.editor.model.fields,
@@ -223,9 +225,11 @@ class MainWindow(QMainWindow):
             return
 
         self.preview.load_image("output/barcode.png")
+        
+        self.barcode_generated = True
         self.dashboard.update_summary(
             health=self.dashboard.health.text().replace("Record Health: ", ""),
-            barcode_status="Generated",
+            barcode_status="Up to Date",
             validation=self.dashboard.validation.text().replace("Validation: ", ""),
             field_count=len(self.editor.model.fields),
         )
@@ -256,9 +260,14 @@ class MainWindow(QMainWindow):
             else "Issues Found"
         )
 
+        if self.barcode_generated:
+            barcode_status = "Out of Date"
+        else:
+            barcode_status = "Ready"
+
         self.dashboard.update_summary(
             health=f"{health}%",
-            barcode_status="Out of Date",
+            barcode_status=barcode_status,
             validation=validation,
             field_count=len(fields),
         )

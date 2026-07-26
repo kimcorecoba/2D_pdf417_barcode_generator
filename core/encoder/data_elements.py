@@ -50,20 +50,7 @@ DATA_ELEMENTS = {
             "UNK",
         },
     ),
-    "DAZ": DataElement(
-        "DAZ",
-        max_length=3,
-        allowed_values={
-            "BAL",
-            "BLK",
-            "BLN",
-            "BRO",
-            "GRY",
-            "RED",
-            "SDY",
-            "WHI",
-        },
-    ),
+    
     "DAQ": DataElement("DAQ", max_length=25),
     "DAK": DataElement("DAK", max_length=11),
     "DAG": DataElement(
