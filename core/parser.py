@@ -11,11 +11,9 @@ class AAMVAParser:
     def parse(self, raw_text: str) -> list[Field]:
 
         self.header = HeaderParser().parse(raw_text)
-        header = self.header
         
 
-        #if header: # We'll use the header later.
-            #pass
+        
 
         fields = []
 
@@ -64,14 +62,13 @@ class AAMVAParser:
             
         for line in lines:
             
-            if line.startswith(" "):
-                print(f"Leading space found: {repr(line)}")
+                
 
             if len(line) < 4:
                 continue
             
             
-            print(repr(line))
+            
             code = line[:3]
    
 
@@ -92,13 +89,11 @@ class AAMVAParser:
             value = line[3:]
             
             
-            if code in ("DAK", "DCL"):
-                print(f"BEFORE LOOKUP: {code} -> {repr(value)} (len={len(value)})")
+            
 
             name, required = FIELD_DEFINITIONS[code]
 
-            if code in ("DAK", "DCL"):
-                print(f"AFTER LOOKUP: {code}")
+            
 
             field = Field(
                 code=code,
@@ -108,17 +103,10 @@ class AAMVAParser:
                 required=required,
             )
 
-            if field.code in ("DAK", "DCL"):
-                print(f"AFTER FIELD: {field.code} -> {repr(field.value)}")
+           
 
             
 
             fields.append(field)
-            
-        print("\n=== Parsed Fields ===")
-
-        for field in fields:
-            print(f"{field.code}: {repr(field.value)}")
-
-        print("=====================\n")   
+               
         return fields

@@ -36,7 +36,7 @@ class Validator:
             return
         birth_date = datetime.strptime(dbb.value, "%m%d%Y").date()
         issue_date = datetime.strptime(dbd.value, "%m%d%Y").date()
-        expiry_date = datetime.strptime(dba.value, "%m%d%Y").date()    
+            
         if issue_date <= birth_date:
             dbd.valid = False
             dbd.message = "Issue date must be after date of birth."    
@@ -79,11 +79,7 @@ class Validator:
                     
             if field.code == "DAY" and field.value:
 
-                VALID_EYE_COLORS = {
-                    "BLK", "BLU", "BRO", "GRY",
-                    "GRN", "HAZ", "MAR", "PNK",
-                    "DIC", "UNK"
-                }
+                
 
                 if field.value.upper() not in VALID_EYE_COLORS:
                     field.valid = False
@@ -91,22 +87,14 @@ class Validator:
                     
             if field.code == "DAJ" and field.value:
 
-                VALID_STATE_CODES = {
-                    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE",
-                    "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS",
-                    "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
-                    "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY",
-                    "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-                    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
-                    "WI", "WY", "DC"
-                }
+                
 
                 if field.value.upper() not in VALID_STATE_CODES:
                     field.valid = False
                     field.message = "Invalid state code."
                     
             if field.code == "DAK" and field.value:
-                print("Checking DAK:", field.value)
+                
                 zip_code = field.value.strip()
 
                 if not (
@@ -118,7 +106,7 @@ class Validator:
                     field.message = "ZIP Code must be 5 or 9 digits." 
             
             if field.code == "DAU" and field.value:
-                print("DAU =", repr(field.value))
+                
 
                 height = field.value.strip().upper()
 

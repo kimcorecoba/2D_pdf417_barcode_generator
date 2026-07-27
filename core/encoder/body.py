@@ -60,7 +60,7 @@ class BodyBuilder:
                 )
 
             entry = f"{field.code}{field.value}"
-            print(f"{field.code}: {len(entry)} bytes -> {repr(entry)}")
+            
             body.append(entry)
 
         result = (
@@ -68,9 +68,6 @@ class BodyBuilder:
             + config.segment_terminator
         )
 
-        print("\n=== BodyBuilder ===")
-        print("len(result) =", len(result))
-        print("Last 40 chars:", repr(result[-40:]))
-        print("===================\n")
+
 
         return result
