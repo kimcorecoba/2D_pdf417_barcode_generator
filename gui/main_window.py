@@ -13,6 +13,7 @@ from gui.dashboard import Dashboard
 from gui.field_editor import FieldEditor
 from core.models import Field
 from gui.toolbar import Toolbar
+from core.file_loader import load_aamva_file
 from core.parser import AAMVAParser
 from core.validator import Validator
 from core.barcode import BarcodeGenerator
@@ -132,21 +133,27 @@ class MainWindow(QMainWindow):
             self,
             "Open AAMVA File",
             "",
-            "Text Files (*.txt);;All Files (*)"
+            "AAMVA Files (*.txt *.bin);;Text Files (*.txt);;Binary Files (*.bin);;All Files (*)"
         )
 
         if not filename:
             return
 
-        print(filename)    
-        
-        
+        print(filename)
 
-        with open(filename, "r", encoding="utf-8") as file:
-            raw = file.read()
-            print("========== RAW FILE ==========")
-            print(repr(raw))
-            print("==============================")
+        try:
+            raw = load_aamva_file(filename)
+        except OSError as error:
+            QMessageBox.warning(
+                self,
+                "Import Failed",
+                f"Could not read file:\n{error}",
+            )
+            return
+
+        print("========== RAW FILE ==========")
+        print(repr(raw))
+        print("==============================")
 
         parser = AAMVAParser()
         validator = Validator()

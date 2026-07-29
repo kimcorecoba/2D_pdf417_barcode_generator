@@ -1,4 +1,5 @@
 from core.header_info import HeaderInfo
+from core.subfile_info import SubfileInfo
 
 
 def default_header():
@@ -8,4 +9,7 @@ def default_header():
         jurisdiction_version="00",
         number_of_entries=1,
         file_type="DL",
+        subfiles=[
+            SubfileInfo(file_type="DL"),
+        ],
     )

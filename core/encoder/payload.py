@@ -3,68 +3,69 @@ from .config import EncoderConfig
 from .subfile import SubfileBuilder
 from .body import BodyBuilder
 
+
 class AAMVAEncoder:
 
     def encode(self, fields, header=None):
-        
 
         from core.aamva_versions import (
             ISSUER_ID,
             AAMVA_VERSION,
-            FILE_TYPE,
         )
 
         if header:
-           config = EncoderConfig(
+            config = EncoderConfig(
                 issuer_id=header.iin,
                 version=header.version,
                 jurisdiction_version=header.jurisdiction_version,
                 number_of_entries=header.number_of_entries,
             )
-            
+            subfile_types = self._resolve_subfile_types(fields, header)
         else:
             config = EncoderConfig(
                 issuer_id=ISSUER_ID,
                 version=AAMVA_VERSION,
             )
-       
+            subfile_types = self._resolve_subfile_types(fields, None)
 
         header_text = HeaderBuilder().build(config)
-        
-        
+        body_builder = BodyBuilder()
 
-        body_text = BodyBuilder().build(
-            fields,
-            config,
-        )
-        
-        
-        
-        subfile_length = (
-            2               # "DL"
-            + len(body_text)
-                     # Segment Terminator (CR)
-        )
+        bodies = [
+            body_builder.build_subfile(subfile_type, fields, config)
+            for subfile_type in subfile_types
+        ]
 
-        placeholder = SubfileBuilder().build(
-            file_type=header.file_type if header else config.file_type,
-            offset=0,
-            length=subfile_length,
-        )
+        designator_block_size = 10 * len(subfile_types)
+        offset = len(header_text) + designator_block_size
 
-        subfile_offset = len(header_text) + len(placeholder)
+        subfile_designators = []
+        for subfile_type, body in zip(subfile_types, bodies):
+            subfile_designators.append(
+                SubfileBuilder().build(
+                    file_type=subfile_type,
+                    offset=offset,
+                    length=len(body),
+                )
+            )
+            offset += len(body)
 
-        subfile = SubfileBuilder().build(
-            file_type=header.file_type if header else config.file_type,
-            offset=subfile_offset,
-            length=subfile_length,
-        )
-
-        payload = (
-            header_text
-            + subfile
-            + body_text
-        )
-        
-        
+        payload = header_text + "".join(subfile_designators) + "".join(bodies)
         return payload
+
+    def _resolve_subfile_types(self, fields, header) -> list[str]:
+        if header and header.subfiles:
+            return [subfile.file_type for subfile in header.subfiles]
+
+        subfile_types = []
+        seen = set()
+
+        for field in fields:
+            if field.subfile not in seen:
+                subfile_types.append(field.subfile)
+                seen.add(field.subfile)
+
+        if not subfile_types:
+            return ["DL"]
+
+        return subfile_types

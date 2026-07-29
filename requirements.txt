@@ -1,0 +1,3 @@
+PySide6
+pdf417gen
+Pillow

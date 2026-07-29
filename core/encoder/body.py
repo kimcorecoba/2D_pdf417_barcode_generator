@@ -1,73 +1,47 @@
-from .field_order import MANDATORY_FIELD_ORDER
 from .data_elements import DATA_ELEMENTS
 from .validator import validate_field
 
 
-
-
 class BodyBuilder:
     """
-    Builds the DL subfile body.
+    Builds AAMVA subfile bodies using imported field order.
     """
 
-    def build(self, fields, config) -> str:
-
-        field_lookup = {
-            field.code: field.value
-            for field in fields
-        }
-
-        body = []
-
-        # Emit fields in AAMVA order
-        for element in MANDATORY_FIELD_ORDER:
-
-            value = field_lookup.get(element.code)
-            validate_field(element, value)
-
-            if not value:
-
-                continue
-
-            
-           
-            body.append(f"{element.code}{value}")
-
-        # Emit any remaining fields afterwards
-        ordered_codes = {
-            element.code
-            for element in MANDATORY_FIELD_ORDER
-        }
+    def build_subfile(
+        self,
+        subfile_type: str,
+        fields,
+        config,
+    ) -> str:
+        entries = []
 
         for field in fields:
-            
-            if not field.value:
+            if field.subfile != subfile_type:
                 continue
 
-            if field.code in ordered_codes:
+            if not field.value and not field.present_in_source:
                 continue
 
-            element = DATA_ELEMENTS.get(field.code)
+            if field.value:
+                element = DATA_ELEMENTS.get(field.code)
+                if element is not None:
+                    validate_field(element, field.value)
+                elif len(field.value) > 250:
+                    raise ValueError(
+                        f"{field.code} exceeds the maximum length of 250 characters."
+                    )
 
-            if (
-                element is not None
-                and element.max_length is not None
-                and len(field.value) > element.max_length
-            ):
-                raise ValueError(
-                    f"{field.code} exceeds the maximum "
-                    f"length of {element.max_length} characters."
-                )
+            entries.append(f"{field.code}{field.value}")
 
-            entry = f"{field.code}{field.value}"
-            
-            body.append(entry)
+        if not entries:
+            return ""
 
-        result = (
-            config.data_element_separator.join(body)
-            + config.segment_terminator
-        )
+        if subfile_type in {"DL", "ID"}:
+            body = subfile_type + entries[0]
+            if len(entries) > 1:
+                body += config.data_element_separator.join([""] + entries[1:])
+        else:
+            body = config.data_element_separator.join(entries)
 
-
-
-        return result
+        body += config.segment_terminator
+        return body

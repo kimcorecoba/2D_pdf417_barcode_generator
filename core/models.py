@@ -16,3 +16,7 @@ class Field:
     original_value: str = ""
 
     changed: bool = False
+
+    subfile: str = "DL"
+
+    present_in_source: bool = False

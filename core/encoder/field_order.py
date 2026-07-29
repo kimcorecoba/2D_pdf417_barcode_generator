@@ -1,7 +1,11 @@
+"""
+Default DL field order for new records without an imported template.
+Encoding uses the field list order from import or the editor instead.
+"""
+
 from .data_elements import DATA_ELEMENTS
 
-
-MANDATORY_FIELD_ORDER = [
+DEFAULT_DL_FIELD_ORDER = [
     DATA_ELEMENTS["DBA"],
     DATA_ELEMENTS["DCS"],
     DATA_ELEMENTS["DAC"],

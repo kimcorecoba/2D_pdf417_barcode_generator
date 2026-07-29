@@ -1,6 +1,7 @@
 from core.models import Field
 from core.date_validator import is_valid_date
 from datetime import datetime
+import re
 
 VALID_EYE_COLORS = {
     "BLK", "BLU", "BRO", "GRY",
@@ -106,27 +107,28 @@ class Validator:
                     field.message = "ZIP Code must be 5 or 9 digits." 
             
             if field.code == "DAU" and field.value:
-                
 
-                height = field.value.strip().upper()
+                match = re.match(
+                    r"^(\d+)\s*(IN|CM)$",
+                    field.value.strip(),
+                    re.IGNORECASE,
+                )
 
-                if height.endswith("IN"):
-                    number = height[:-2]
-
-                    if not (number.isdigit() and 36 <= int(number) <= 96):
-                        field.valid = False
-                        field.message = "Height must be between 36IN and 96IN."
-
-                elif height.endswith("CM"):
-                    number = height[:-2]
-
-                    if not (number.isdigit() and 91 <= int(number) <= 244):
-                        field.valid = False
-                        field.message = "Height must be between 91CM and 244CM."
-
-                else:
+                if not match:
                     field.valid = False
-                    field.message = "Height must end with IN or CM."  
+                    field.message = "Height must be formatted like 076 IN or 180 CM."
+                    continue
+
+                number = int(match.group(1))
+                unit = match.group(2).upper()
+
+                if unit == "IN" and not (36 <= number <= 96):
+                    field.valid = False
+                    field.message = "Height must be between 36 IN and 96 IN."
+
+                elif unit == "CM" and not (91 <= number <= 244):
+                    field.valid = False
+                    field.message = "Height must be between 91 CM and 244 CM."
 
             if field.code == "DAW" and field.value:
 
