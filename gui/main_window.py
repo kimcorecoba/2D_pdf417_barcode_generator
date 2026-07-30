@@ -17,7 +17,9 @@ from core.file_loader import load_aamva_file
 from core.parser import AAMVAParser
 from core.validator import Validator
 from core.barcode import BarcodeGenerator
+from core.file_compare import compare_files
 from gui.barcode_preview import BarcodePreview
+from gui.compare_dialog import CompareDialog
 from PySide6.QtWidgets import (
     QMainWindow,
     QFileDialog,
@@ -52,6 +54,7 @@ class MainWindow(QMainWindow):
         self.toolbar.import_clicked.connect(self.import_aamva)
         self.toolbar.generate_clicked.connect(self.generate_barcode)
         self.toolbar.save_clicked.connect(self.save_as)
+        self.toolbar.compare_clicked.connect(self.compare_files)
         
 
         # Dashboard
@@ -315,3 +318,47 @@ class MainWindow(QMainWindow):
             "Save",
             "Record saved successfully."
         )
+
+    def compare_files(self):
+
+        file_filter = (
+            "AAMVA Files (*.txt *.bin);;"
+            "Text Files (*.txt);;"
+            "Binary Files (*.bin);;"
+            "All Files (*)"
+        )
+
+        left_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Compare Files - Select Original",
+            "",
+            file_filter,
+        )
+
+        if not left_path:
+            return
+
+        right_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Compare Files - Select Generated",
+            "",
+            file_filter,
+        )
+
+        if not right_path:
+            return
+
+        try:
+            result = compare_files(left_path, right_path)
+        except OSError as error:
+            QMessageBox.warning(
+                self,
+                "Compare Failed",
+                f"Could not read file:\n{error}",
+            )
+            return
+
+        dialog = CompareDialog(result, self)
+        dialog.exec()
+
+        self.statusBar().showMessage(result.summary)

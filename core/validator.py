@@ -18,6 +18,48 @@ VALID_STATE_CODES = {
     "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
     "WI", "WY", "DC"
 }
+
+
+def validate_height(value: str) -> tuple[bool, str]:
+    stripped = value.strip()
+
+    unit_match = re.match(
+        r"^(\d+)\s*(IN|CM)$",
+        stripped,
+        re.IGNORECASE,
+    )
+    if unit_match:
+        number = int(unit_match.group(1))
+        unit = unit_match.group(2).upper()
+
+        if unit == "IN" and not (36 <= number <= 96):
+            return False, "Height must be between 36 IN and 96 IN."
+
+        if unit == "CM" and not (91 <= number <= 244):
+            return False, "Height must be between 91 CM and 244 CM."
+
+        return True, ""
+
+    # New York and some older jurisdictions use feet+inches: 503 = 5'03"
+    fii_match = re.match(r"^(\d)(\d{2})$", stripped)
+    if fii_match:
+        feet = int(fii_match.group(1))
+        inches = int(fii_match.group(2))
+
+        if not (3 <= feet <= 8):
+            return False, "Height must use 3-8 feet in FII format (e.g. 503)."
+
+        if not (0 <= inches <= 11):
+            return False, "Height inches must be 00-11 in FII format (e.g. 503)."
+
+        return True, ""
+
+    return (
+        False,
+        "Height must be formatted like 076 IN, 180 CM, or NY FII (e.g. 503).",
+    )
+
+
 class Validator:
     
     def validate_relationships(self, fields):
@@ -108,27 +150,10 @@ class Validator:
             
             if field.code == "DAU" and field.value:
 
-                match = re.match(
-                    r"^(\d+)\s*(IN|CM)$",
-                    field.value.strip(),
-                    re.IGNORECASE,
-                )
-
-                if not match:
+                valid, message = validate_height(field.value)
+                if not valid:
                     field.valid = False
-                    field.message = "Height must be formatted like 076 IN or 180 CM."
-                    continue
-
-                number = int(match.group(1))
-                unit = match.group(2).upper()
-
-                if unit == "IN" and not (36 <= number <= 96):
-                    field.valid = False
-                    field.message = "Height must be between 36 IN and 96 IN."
-
-                elif unit == "CM" and not (91 <= number <= 244):
-                    field.valid = False
-                    field.message = "Height must be between 91 CM and 244 CM."
+                    field.message = message
 
             if field.code == "DAW" and field.value:
 

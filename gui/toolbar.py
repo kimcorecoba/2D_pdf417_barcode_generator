@@ -9,6 +9,7 @@ class Toolbar(QWidget):
     generate_clicked = Signal()
     save_clicked = Signal()
     sample_clicked = Signal()
+    compare_clicked = Signal()
 
    
 
@@ -21,6 +22,7 @@ class Toolbar(QWidget):
         self.sample_button = QPushButton("Fill Sample Data")
         self.generate_button = QPushButton("Generate Barcode")
         self.save_button = QPushButton("Save As...")
+        self.compare_button = QPushButton("Compare Files...")
         
         layout = QHBoxLayout(self)
         layout.addWidget(self.new_button)
@@ -28,6 +30,7 @@ class Toolbar(QWidget):
         layout.addWidget(self.import_button)
         layout.addWidget(self.generate_button)
         layout.addWidget(self.save_button)
+        layout.addWidget(self.compare_button)
         layout.addStretch()
         
         self.new_button.clicked.connect(self.new_clicked.emit)
@@ -35,3 +38,4 @@ class Toolbar(QWidget):
         self.import_button.clicked.connect(self.import_clicked.emit)
         self.generate_button.clicked.connect(self.generate_clicked.emit)
         self.save_button.clicked.connect(self.save_clicked.emit)
+        self.compare_button.clicked.connect(self.compare_clicked.emit)
